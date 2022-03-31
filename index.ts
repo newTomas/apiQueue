@@ -31,7 +31,7 @@ async function handleQueue(jobs: Job[]) {
       if (res instanceof Promise) {
         res.then(
           cur.resolve,
-          cur.noErrors ? cur!.resolve : cur.reject
+          cur.noErrors ? cur.resolve : cur.reject
         );
       } else cur.resolve(res);
     } catch (e) {
