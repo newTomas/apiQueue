@@ -1,7 +1,7 @@
 interface Job {
   fn: Function,
-  resolve: Function,
-  reject: Function,
+  resolve: (value: any) => any,
+  reject: (value: any) => any,
   noErrors: Boolean
 }
 
@@ -26,9 +26,17 @@ export function createQueue(name: string, interval: number) {
 async function handleQueue(jobs: Job[]) {
   var cur = jobs.shift();
   if (cur) {
-    cur.fn().then(
-      cur.resolve,
-      !cur.noErrors ? cur.reject : (err: any) => cur!.resolve(err)
-    );
+    try {
+      var res = cur.fn();
+      if (res instanceof Promise) {
+        res.then(
+          cur.resolve,
+          cur.noErrors ? cur!.resolve : cur.reject
+        );
+      } else cur.resolve(res);
+    } catch (e) {
+      if (cur.noErrors) cur.resolve(e);
+      else cur.reject(e);
+    }
   }
 }

@@ -35,7 +35,20 @@ function handleQueue(jobs) {
     return __awaiter(this, void 0, void 0, function* () {
         var cur = jobs.shift();
         if (cur) {
-            cur.fn().then(cur.resolve, !cur.noErrors ? cur.reject : (err) => cur.resolve(err));
+            try {
+                var res = cur.fn();
+                if (res instanceof Promise) {
+                    res.then(cur.resolve, cur.noErrors ? cur.resolve : cur.reject);
+                }
+                else
+                    cur.resolve(res);
+            }
+            catch (e) {
+                if (cur.noErrors)
+                    cur.resolve(e);
+                else
+                    cur.reject(e);
+            }
         }
     });
 }
